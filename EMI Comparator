@@ -1,0 +1,57 @@
+#http://www.codeskulptor.org/#user41_MtzJHb0RKmThlyh.py
+
+#Compare EMI's of different banks and different time periods by providing 
+#principal amounts, rate of interest of each bank.
+
+import simpleplot
+import simplegui
+banks = ["Barclays","BNP","Deutsche","JPMorgan"]
+
+sentiment = [()] 
+#personal loans
+pl = [0.095,0.10,0.24,0.11]   #Interest rates here
+
+principal = 1000              #Principal Ammount
+
+ammounts = [[],[],[],[]]
+
+max_time = 7                  #Max time period
+
+def cal(principal,time,rate):
+    j = float(rate/12)
+    n = time*12
+    k = 1/(1+j)**n
+    m = principal*(j/(1-k))
+    
+    return m
+
+for b in range(len(banks)): 
+    ammounts[b].append(principal)
+    for t in range(max_time-1):
+        ammounts[b].append(cal(principal,t+1,pl[b]))
+        
+
+dataset = [[],[],[],[]]
+
+for b in range(len(banks)):
+    for t in range(max_time-1):
+        if(t!=0):
+            dataset[b].append((t,ammounts[b][t]))
+        
+simpleplot.plot_lines('EMI', 900, 600, 'Time(Years)', 'EMI', [dataset[0],dataset[1],dataset[2],dataset[3]], True, [banks[0],banks[1],banks[2],banks[3]])        
+
+
+
+for b in range(len(banks)):
+    print banks[b]
+    
+    for t in range(max_time-1):
+        if(t!=0):	   
+            print "EMI at the end of Year "+str(t)+" " + str(ammounts[b][t])
+    print ""
+    
+
+
+
+     
+    
