@@ -1,0 +1,252 @@
+#GO TO http://www.codeskulptor.org/#user41_Acw9Cf0yZ6HREjs.py TO PLAY.
+#USED 'poc_2048_gui' CLASS PROVIDED BY THE COURSE.
+"""
+Clone of 2048 game.
+"""
+
+import poc_2048_gui
+import random
+
+# Directions, DO NOT MODIFY
+UP = 1
+DOWN = 2
+LEFT = 3
+RIGHT = 4
+
+# Offsets for computing tile indices in each direction.
+# DO NOT MODIFY this dictionary.
+OFFSETS = {UP: (1, 0),
+           DOWN: (-1, 0),
+           LEFT: (0, 1),
+           RIGHT: (0, -1)}
+
+def shift_list(input_list):                             
+    """
+    To shift all the non zero elements in the list
+    towards left
+    """
+    temp_list = []
+   
+    for append_non_zero in range(0,len(input_list)):   
+        if input_list[append_non_zero] != 0:
+            temp_list.append(input_list[append_non_zero])      
+    while len(temp_list) != len(input_list):
+        temp_list.append(0)
+  
+    input_list = temp_list
+    return input_list
+
+
+def merge(line):
+    """
+    Helper function that merges a single row or column in 2048
+    """
+    result_list = []
+    while len(result_list) != len(line):           
+        result_list.append(0)     
+    line = shift_list(line)             
+    current_pointer = 0
+    
+    while current_pointer < len(line):
+        
+        if current_pointer != len(line)-1 and (line[current_pointer]==line[current_pointer + 1]):
+            result_list[current_pointer] = 2 * line[current_pointer]
+            current_pointer += 2
+        else:
+            result_list[current_pointer] = line[current_pointer]
+            current_pointer += 1
+            
+    result_list = shift_list(result_list)     
+    return result_list
+
+class TwentyFortyEight:
+    """
+    Class to run the game logic.
+    """
+
+    def __init__(self, grid_height, grid_width):
+        
+        self._grid_height =  grid_height
+        self._grid_width  =  grid_width
+        
+        self._change_=False
+        
+        self._initial_tiles_leftright = self.traverse_grid([0,0],[1,0],self._grid_height)
+        self._initial_tiles_updown = self.traverse_grid([0,0],[0,1],self._grid_width)
+        
+        self.reset()
+
+    def reset(self):
+        """
+        Reset the game so the grid is empty except for two
+        initial tiles.
+        """
+        self._grid_ = [[col+row-col-row for col in range(self._grid_width)]
+                           for row in range(self._grid_height)]
+        
+        self.new_tile()
+        self.new_tile()
+
+    def __str__(self):
+        
+        #Return a string representation of the grid for debugging.
+        
+        return_str = []
+        for row in range(self._grid_height):
+            return_str.append(self._grid_[row])
+            
+        return str(return_str)
+   
+    def get_grid_height(self):
+        """
+        Get the height of the board.
+        """
+        return self._grid_height
+
+    def get_grid_width(self):
+        """
+        Get the width of the board.
+        """
+        return self._grid_width
+    
+    def traverse_grid(self,start_cell, direction, num_steps):
+            """
+            Traverse grid 
+            """
+            return_list=[]
+            for step in range(num_steps):
+                row = start_cell[0] + step * direction[0]
+                col = start_cell[1] + step * direction[1]
+                return_list.append([row,col]) 
+                
+            return return_list
+    
+    def if_change(self,list1,list2):
+        """
+        check if lists are same to 'see the change' :P
+        """
+        if list1 != list2:
+            self._change_=True
+    
+    def new_tile_change(self):
+        """
+        check if change is there.New tile if true
+        """
+        if self._change_:
+            self.new_tile()
+    
+    def move(self, direction):
+        """
+        Move all tiles in the given direction and add
+        a new tile if any tiles moved.
+        """
+        self._change_=False
+        if (OFFSETS[direction])[0] == 0:
+            count=0
+            for tile in self._initial_tiles_leftright:
+                
+                to_merge = (self.traverse_grid(tile,[0,1],self._grid_width))
+                
+                to_merge_list=[]
+                for lis in to_merge:
+                    to_merge_list.append(self._grid_[lis[0]][lis[1]])
+ 
+                if (OFFSETS[direction])[1]==1:
+                    to_merge_list = merge(to_merge_list)
+                    
+                    self.if_change(to_merge_list,self._grid_[count])
+                        
+                    
+                    self._grid_[count] = to_merge_list
+                else:
+                    to_merge_list.reverse()
+                    
+                    to_merge_list = merge(to_merge_list)
+                   
+                    to_merge_list.reverse()
+                    
+                    self.if_change(to_merge_list,self._grid_[count])
+                        
+                    self._grid_[count]=to_merge_list
+     
+                count += 1
+                
+        else:
+            
+            for tile in self._initial_tiles_updown:
+                
+                
+                to_merge = (self.traverse_grid(tile,[1,0],self._grid_height))
+                to_merge_list=[]
+                for lis in to_merge:
+         
+                    to_merge_list.append(self._grid_[lis[0]][lis[1]])
+
+                if (OFFSETS[direction])[0]==1:
+                    count=0
+                    
+                    to_merge_list = merge(to_merge_list)
+                    
+                    for lis in to_merge:
+                        
+                        self.if_change(self._grid_[lis[0]][lis[1]],to_merge_list[count])
+                              
+                        self._grid_[lis[0]][lis[1]] = to_merge_list[count]
+                        count += 1
+                        
+                else:
+                    to_merge_list.reverse()
+                    
+                    to_merge_list = merge(to_merge_list)
+                    
+                    to_merge_list.reverse()
+                    
+                    count=0
+                    for lis in to_merge:
+                        
+                        self.if_change(self._grid_[lis[0]][lis[1]],to_merge_list[count])
+                                   
+                        self._grid_[lis[0]][lis[1]] = to_merge_list[count]
+                        count += 1   
+ 
+        self.new_tile_change()
+
+    def new_tile(self):
+        """
+        Create a new tile in a randomly selected empty
+        square.  The tile should be 2 90% of the time and
+        4 10% of the time.
+        """
+        random_row = random.randint(0,self._grid_height-1)
+        random_col = random.randint(0,self._grid_width-1)
+        random_val = random.randint(0,10)
+        
+        if random_val == 9:
+            random_val = 4
+        else:
+            random_val = 2
+        
+        while 1:
+            if self.get_tile(random_row,random_col) == 0:
+                self.set_tile(random_row,random_col,random_val)
+                break
+            else:
+                random_row = random.randint(0,self._grid_height-1)
+                random_col = random.randint(0,self._grid_width-1)
+                
+                
+    def set_tile(self, row, col, value):
+        """
+        Set the tile at position row, col to have the given value.
+        """
+        self._grid_[row][col] = value
+
+    def get_tile(self, row, col):
+        """
+        Return the value of the tile at position row, col.
+        """
+        return self._grid_[row][col]
+    
+
+poc_2048_gui.run_gui(TwentyFortyEight(4,4))
+
