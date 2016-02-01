@@ -1,0 +1,100 @@
+#http://www.codeskulptor.org/#user41_w6xwIIs1pyNkcvP.py 
+'''
+                                    Fibonacci Clock Visualization
+											                      (glasses-on)
+Hour: Red and Blue
+Minute: Green and Red
+
+Add all the respective color block's weight
+Multiply the minute sum by 5
+
+Click Play button on upper left corner
+
+'''
+
+import simplegui
+
+box = ["White","White","White","White","-","White"]
+
+number = [5,3,2,1,1]
+'''
+  Weights:
+ __________
+|   |1_|   |
+|2__|1_|  5|
+|3_____|___|
+
+'''
+            
+def input_handler(text_input):
+    global box
+    time_str = text_input
+    
+    part = time_str.partition(":")
+    box = ["White","White","White","White","-","White"]
+    
+    label.set_text('')
+    
+    time_hour = int(part[0])
+    time_min  = int(part[2])
+    
+    inside=True
+    
+    if not ((time_hour <= 12 and time_hour > 0) and (time_min >= 0 and time_hour < 59)):
+        label.set_text('Enter valid time')
+        box = ["White","White","White","White","-","White"]
+        inside=False
+
+    if not (time_min % 5):
+        time_min /= 5
+    else:
+        time_min -= time_min % 5
+        time_min /= 5
+
+    if inside:                                # If accurate time is provided
+        for hour in number:
+        
+            if time_hour >= hour:
+                box[hour] = "Red"
+                time_hour -= hour             # Hour's logic
+            
+                if time_hour == 1:            # Box[0] and Box[1] both has weight 1
+                    break
+            
+        if time_hour == 1:
+            box[0] = "Red"
+             
+        for minute in number:                 # Minute's logic
+            if time_min >= minute:
+        
+                if box[minute] == "Red":
+                    box[minute] = "Blue"
+                else:
+                    box[minute] = "Green"
+                time_min -= minute  
+
+def draw_handler(canvas):        # Draw all the 5 polygons P[0..5] with the color box[0..5]
+    width = 500
+    height = 300
+    
+    canvas.draw_polygon([(125,0), (250,0),(width/2,height/4) ,(width/4,height/4),], 1, '' ,box[1])
+    canvas.draw_polygon([(width/4,height/4),(width/4,height/2), (width/2,height/2),(width/2,height/4)], 1,'' ,box[0])
+    canvas.draw_polygon([[0,0], [125,0], [125,150], [0,150]], 1,'' ,box[2])
+    canvas.draw_polygon([(0,150), (250,150), (250,300), (0,300)], 1, '', box[3])
+    canvas.draw_polygon([[250,0], [500,0], [500,300], [250,300]], 1, '', box[5])
+    
+
+frame = simplegui.create_frame("Fibonacci Clock",500,300)
+frame.set_draw_handler(draw_handler)
+
+inp = frame.add_input('Enter time:', input_handler, 50)
+label = frame.add_label('')
+
+frame.start()
+    
+    
+
+
+
+
+
