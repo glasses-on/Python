@@ -1,0 +1,57 @@
+#-------------------------------------------------------------------------------------------------------------------------#    
+ Enter product Name in Product String and keyword in feature_search String. 
+ If No reviews are fetched, try entering the product's url in the url String.
+ Enter reviews_limit according to your needs. 
+#-------------------------------------------------------------------------------------------------------------------------#
+
+product = "moto g3"   
+url = ""
+feature_search = "processor"
+reviews_limit = 50
+
+from bs4 import BeautifulSoup
+import urllib
+import mechanize
+import re
+import get_flipkart_links as GFL
+
+def find_all(a_str, sub):
+    start = 0
+    while True:
+        start = a_str.find(sub, start)
+        if start == -1: return
+        yield start
+        start += len(sub) # use start += 1 to find overlapping matches
+
+def getAllReviews(webtext,feature_search):
+    reviews = ""
+    soup = BeautifulSoup(webtext,"html.parser")
+
+    for tag in soup.findAll('span',attrs={"class":"review-text"}):
+        text = tag.text
+        text_lower = text.lower()
+
+        if feature_search.lower() in text_lower:
+            print text
+            print "----------------NEXT REVIEW--------------------"
+
+
+def Flipkart_reviews(product,url,feature_search,reviews_limit):
+
+    br = mechanize.Browser()
+
+    urls = GFL.get_review_links_flipkart_productname(product,reviews_limit)
+
+    if(urls!=-1):
+        for url in urls:
+            htmltext = br.open(url).read()
+            getAllReviews(htmltext,feature_search)
+            
+    else:
+        urls = GFL.get_review_links_flipkart_productlink(url,reviews_limit)
+        
+        for url in urls:
+            htmltext = br.open(url).read()
+            getAllReviews(htmltext,feature_search)
+        
+Flipkart_reviews(product,url,feature_search,reviews_limit)
