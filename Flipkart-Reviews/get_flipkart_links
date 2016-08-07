@@ -1,0 +1,103 @@
+from bs4 import BeautifulSoup
+import urllib
+import mechanize
+import re
+
+product_name = ""
+pid = ""
+product_code = ""
+
+def get_data_from_link(link):
+    global product_name,product_code,pid
+    slash=0
+    i = 0
+    for ii in range(0,len(link)):
+
+        i=ii
+        
+        if slash == 3:
+            break
+        if link[i] == '/':
+            slash += 1
+
+    while link[i] != '/':
+        product_name += link[i]
+        i += 1
+
+    i += 3
+
+    while link[i] != '?':
+        product_code += link[i]
+        i += 1
+        
+    i += 5
+     
+    while link[i] != '&':
+        pid += link[i]
+        i += 1
+
+'''
+    Returns a list of links which contains all reviews of a specific product name(limit is max_reviews). If No such particular product is found,
+    -1 is returned. Then the user has to input the product link.
+'''
+def get_review_links_flipkart_productname(product,max_reviews):
+    
+    
+    p = ""
+    p_dash = ""
+    base_url = "http://www.flipkart.com"
+
+    for i in range(0,len(product)):
+        if product[i] == " ":
+            p += '+'
+        else:
+            p += product[i]
+            
+    for i in range(0,len(product)):
+        if product[i] == " ":
+            break
+        else:
+            p_dash += product[i]
+
+    search_link = "http://www.flipkart.com/search?q="+p+"&as=off&as-show=on&otracker=start"
+
+    br = mechanize.Browser()
+    htmltext = br.open(search_link).read()
+
+    soup = BeautifulSoup(htmltext)
+
+    found=False
+    
+    for tag in soup.findAll('a',attrs={"class":"fk-display-block"}):
+        text = tag['href']
+
+        if text.find(p_dash) != -1:
+            final_product_link = base_url+text
+            found=True
+            break
+
+    if not found:
+        return -1
+
+    get_data_from_link(final_product_link)
+
+    return_list = []
+    
+    for count in range(0,max_reviews/10):
+        review_link = "http://flipkart.com/"+product_name+"/product-reviews/"+product_code+"?pid="+pid+"&rating=1,2,3,4,5&reviewers=all&type=all&sort=most_helpful&start="+str(count*10)
+        return_list.append(review_link)
+
+    return return_list
+
+        
+def get_review_links_flipkart_productlink(product_link,max_reviews):
+
+    get_data_from_link(product_link)
+
+    return_list = []
+    
+    for count in range(0,max_reviews/10):
+        review_link = "http://flipkart.com/"+product_name+"/product-reviews/"+product_code+"?pid="+pid+"&rating=1,2,3,4,5&reviewers=all&type=all&sort=most_helpful&start="+str(count*10)
+        return_list.append(review_link)
+
+    return return_list   
